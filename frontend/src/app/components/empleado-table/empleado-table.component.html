@@ -1,0 +1,27 @@
+<div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Cargo</th>
+        <th>Departamento</th>
+        <th>Operaciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let empleado of empleados | async">
+        <td>{{ empleado.nombre }}</td>
+        <td>{{ empleado.cargo }}</td>
+        <td>{{ empleado.departamento }}</td>
+        <td>
+          <button class="btn-flat" (click)="edit(empleado)">
+            <i class="material-icons blue-text">edit</i>
+          </button>
+          <button class="btn-flat" (click)="delete(empleado)">
+            <i class="material-icons red-text">delete</i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

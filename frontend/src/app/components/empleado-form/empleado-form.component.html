@@ -1,0 +1,83 @@
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Registro de Nuevo Empleado</h2>
+    <form [formGroup]="employeeForm" (submit)="addEmployee()">
+      <div class="input-field">
+        <i class="material-icons prefix">person</i>
+
+        <input
+          type="text"
+          id="nombre"
+          formControlName="nombre"
+          placeholder="Ingrese el nombre"
+        />
+        <span *ngIf="hasFormError('nombre')" class="red-text">
+          {{ getErrorMessage("nombre") }}
+        </span>
+      </div>
+      <div class="input-field">
+        <i class="material-icons prefix">work</i>
+        <input
+          type="text"
+          id="cargo"
+          formControlName="cargo"
+          placeholder="Ingrese el cargo"
+        />
+        <span *ngIf="hasFormError('cargo')" class="red-text">
+          {{ getErrorMessage("cargo") }}
+        </span>
+      </div>
+      <div class="input-field">
+        <i class="material-icons prefix">apartment</i>
+        <input
+          type="text"
+          id="departamento"
+          formControlName="departamento"
+          placeholder="Ingrese el departamento"
+        />
+        <span *ngIf="hasFormError('departamento')" class="red-text">
+          {{ getErrorMessage("departamento") }}
+        </span>
+      </div>
+      <div class="input-field">
+        <i class="material-icons prefix">attach_money</i>
+        <input
+          type="number"
+          id="sueldo"
+          formControlName="sueldo"
+          placeholder="Ingrese el sueldo"
+        />
+        <span *ngIf="hasFormError('sueldo')" class="red-text">
+          {{ getErrorMessage("sueldo") }}
+        </span>
+      </div>
+      <button *ngIf="mode === 'creation'" type="submit" class="btn btn-primary">
+        Crear
+      </button>
+      <button
+        *ngIf="mode === 'creation'"
+        type="button"
+        (click)="cancelEdit()"
+        class="btn btn-flat red-text"
+      >
+        Limpiar
+      </button>
+      <button
+        *ngIf="mode === 'edition'"
+        type="submit"
+        class="btn btn-primary"
+        (click)="updateEmployee()"
+      >
+        Actualizar
+      </button>
+      <button
+        *ngIf="mode === 'edition'"
+        type="button"
+        class="btn btn-flat red-text"
+        (click)="cancelEdit()"
+      >
+        Cancelar
+      </button>
+    </form>
+  </div>
+</div>
