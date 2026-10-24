@@ -4,7 +4,7 @@
 module.exports = {
   apps: [
     {
-      name: "backend",              // nombre que verás en `pm2 list`
+      name: "backend-express-app",  // nombre que verás en `pm2 list`
       script: "dist/index.js",      // ajusta al punto de entrada que genera tsc
       cwd: __dirname,
       node_args: "--env-file=.env", // carga el .env (Node 20.6+); si usas dotenv también funciona
