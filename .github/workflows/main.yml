@@ -1,0 +1,121 @@
+# Ubicación en el repo: .github/workflows/deploy-backend.yml
+#
+# Flujo: compila el backend TypeScript en GitHub Actions, empaqueta solo lo
+# necesario (dist + package*.json + ecosystem), lo sube por SSH a la EC2,
+# escribe el .env desde un secret, instala dependencias de producción y
+# recarga la app con PM2 (sin downtime si ya estaba corriendo).
+#
+# Secrets requeridos (Settings → Secrets and variables → Actions):
+#   EC2_HOST      IP pública o dominio de la instancia (ej. 54.243.96.8)
+#   EC2_USER      usuario SSH (ubuntu)
+#   EC2_SSH_KEY   contenido completo del .pem de la instancia
+#   ENV_FILE      contenido completo del .env de producción (multilínea)
+
+name: Deploy backend a EC2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+# Evita dos despliegues simultáneos pisándose entre sí
+concurrency:
+  group: deploy-backend-production
+  cancel-in-progress: false
+
+env:
+  WORKDIR: backend                       # carpeta del backend dentro del repo
+  APP_DIR: /home/ubuntu/apps/backend     # carpeta destino en la EC2
+  NODE_VERSION: "22"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.WORKDIR }}/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: ${{ env.WORKDIR }}
+        run: npm ci
+
+      # Descomenta si tus tests no dependen de una base de datos externa
+      # - name: Tests
+      #   working-directory: ${{ env.WORKDIR }}
+      #   run: npm test
+
+      - name: Compilar TypeScript
+        working-directory: ${{ env.WORKDIR }}
+        run: npm run build
+
+      - name: Empaquetar release
+        working-directory: ${{ env.WORKDIR }}
+        run: |
+          mkdir -p release
+          cp -r dist package.json package-lock.json ecosystem.config.cjs release/
+          tar -czf "$GITHUB_WORKSPACE/release.tgz" -C release .
+
+      - name: Preparar SSH y .env
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2.pem
+          chmod 600 ~/.ssh/ec2.pem
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          printf '%s\n' "$ENV_FILE" > backend.env
+          chmod 600 backend.env
+
+      - name: Subir archivos a la EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          scp -i ~/.ssh/ec2.pem release.tgz backend.env \
+            "$EC2_USER@$EC2_HOST:/tmp/"
+
+      - name: Desplegar y recargar con PM2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/ec2.pem "$EC2_USER@$EC2_HOST" APP_DIR="$APP_DIR" 'bash -s' <<'EOF'
+          set -euo pipefail
+
+          mkdir -p "$APP_DIR"
+          cd "$APP_DIR"
+
+          # Reemplaza el build anterior por el nuevo
+          rm -rf dist
+          tar -xzf /tmp/release.tgz -C "$APP_DIR"
+          mv /tmp/backend.env "$APP_DIR/.env"
+          chmod 600 "$APP_DIR/.env"
+          rm -f /tmp/release.tgz
+
+          # Solo dependencias de producción
+          npm ci --omit=dev
+
+          # Arranca si no existe, recarga sin downtime si ya está corriendo
+          pm2 startOrReload ecosystem.config.cjs --env production --update-env
+          pm2 save
+
+          pm2 status
+          EOF
+
+      - name: Limpiar credenciales del runner
+        if: always()
+        run: rm -f ~/.ssh/ec2.pem backend.env
