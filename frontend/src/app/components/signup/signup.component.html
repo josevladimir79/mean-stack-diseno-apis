@@ -1,0 +1,49 @@
+<div class="container">
+  <div class="card">
+    <div class="card-content">
+      <h2 class="card-title">Registro de Usuario</h2>
+      <form [formGroup]="signupForm" (submit)="signup()">
+        <div class="input-field">
+          <i class="material-icons prefix">person</i>
+          <input
+            type="text"
+            id="nombre"
+            formControlName="nombre"
+            placeholder="Ingrese el nombre"
+          />
+          <span *ngIf="hasFormError('nombre')" class="red-text">
+            {{ getErrorMessage("nombre") }}
+          </span>
+        </div>
+        <div class="input-field">
+          <i class="material-icons prefix">email</i>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="Ingrese el email"
+          />
+          <span *ngIf="hasFormError('email')" class="red-text">
+            {{ getErrorMessage("email") }}
+          </span>
+        </div>
+        <div class="input-field">
+          <i class="material-icons prefix">lock</i>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="Ingrese la contraseña"
+          />
+          <span *ngIf="hasFormError('password')" class="red-text">
+            {{ getErrorMessage("password") }}
+          </span>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+        <button type="button" class="btn btn-flat" routerLink="/login">
+          Iniciar Sesión
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
