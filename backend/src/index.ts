@@ -31,6 +31,10 @@ app.use("/empleados", authenticate, empleadosRoutes(employeeRepository));
 app.use("/usuarios", usuariosRoutes(userRepository));
 app.use("/auth", authRoutes(userRepository));
 
+app.get("/", function (req, res) {
+  res.json({ message: "Servidor corriendo correctamente" });
+});
+
 app.use(errorHandler);
 
 app.listen(port, () => {
