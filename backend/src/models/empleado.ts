@@ -1,6 +1,16 @@
 import { Schema, model } from "mongoose";
 
-const empleadoSchema = new Schema(
+export interface Empleado {
+  id?: string;
+  nombre: string;
+  cargo: string;
+  departamento: string;
+  sueldo: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const empleadoSchema = new Schema<Empleado>(
   {
     nombre: { type: String, required: true },
     cargo: { type: String, required: true },
@@ -13,4 +23,4 @@ const empleadoSchema = new Schema(
   },
 );
 
-export const EmpleadoModel = model("Empleado", empleadoSchema);
+export const EmpleadoModel = model<Empleado>("Empleado", empleadoSchema);
