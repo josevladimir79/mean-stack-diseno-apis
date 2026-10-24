@@ -3,7 +3,8 @@ import {
   empleadoController,
   type IEmpleadoController,
 } from "./empleados.controllers.ts";
-import type { IEmployeeRepository } from "../repositories/IEmployeeRepository.ts";
+import type { IRepository } from "../repositories/IRepository.ts";
+import type { Empleado } from "../models/empleado.ts";
 import type {
   CreateEmployeeDTO,
   EmployeeIdParams,
@@ -13,7 +14,7 @@ import { HttpError } from "../utils/httpError.ts";
 
 describe("🧪 Unit Test: EmployeeController (Mantenibilidad & Testabilidad)", () => {
   let controller: IEmpleadoController;
-  let mockRepository: jest.Mocked<IEmployeeRepository>;
+  let mockRepository: jest.Mocked<IRepository<Empleado>>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let statusMock: jest.Mock;
@@ -23,6 +24,7 @@ describe("🧪 Unit Test: EmployeeController (Mantenibilidad & Testabilidad)", (
     // 1. Crear un Mock 100% aislado de la interfaz (Cero dependencia de Mongoose)
     mockRepository = {
       findAll: jest.fn(),
+      getBy: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -151,7 +153,7 @@ describe("🧪 Unit Test: EmployeeController (Mantenibilidad & Testabilidad)", (
 describe("🧪 Unit Test: EmployeeController - casos de error", () => {
   const ID_VALIDO = "64b7f0c2a1b2c3d4e5f60718";
   let controller: IEmpleadoController;
-  let mockRepository: jest.Mocked<IEmployeeRepository>;
+  let mockRepository: jest.Mocked<IRepository<Empleado>>;
   let mockResponse: Partial<Response>;
   let statusMock: jest.Mock;
   let jsonMock: jest.Mock;
@@ -159,6 +161,7 @@ describe("🧪 Unit Test: EmployeeController - casos de error", () => {
   beforeEach(() => {
     mockRepository = {
       findAll: jest.fn(),
+      getBy: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),

@@ -1,4 +1,5 @@
-import type { IEmployeeRepository } from "../repositories/IEmployeeRepository.js";
+import type { IRepository } from "../repositories/IRepository.ts";
+import type { Empleado } from "../models/empleado.ts";
 import type { Request, Response } from "express";
 import type {
   CreateEmployeeDTO,
@@ -25,7 +26,7 @@ export interface IEmpleadoController {
 }
 
 export const empleadoController = (
-  employeeRepository: IEmployeeRepository,
+  employeeRepository: IRepository<Empleado>,
 ): IEmpleadoController => ({
   getEmpleado: async (req: Request, res: Response) => {
     const empleados = await employeeRepository.findAll();
